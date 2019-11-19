@@ -5,8 +5,10 @@ import numpy as np
 from aido_schemas import EpisodeStart, protocol_agent_duckiebot1, PWMCommands, Duckiebot1Commands, LEDSCommands, RGB, \
     wrap_direct, Context, Duckiebot1Observations, JPGImage
 
-expect_shape = (480, 640, 3)
+from helpers import SteeringToWheelVelWrapper  
 
+expect_shape = (480, 640, 3)
+convertion_wrapper = SteeringToWheelVelWrapper()
 
 class TensorflowTemplateAgent:
     def __init__(self, load_model=False, model_path=None):
@@ -35,11 +37,17 @@ class TensorflowTemplateAgent:
         return action.astype(float)
 
     def on_received_get_commands(self, context: Context):
-        pwm_left, pwm_right = self.compute_action(self.current_image)
+        linear,angular = self.compute_action(self.current_image)
+        pwm_left, pwm_right = convertion_wrapper.convert(linear, angular)
         pwm_left = float(np.clip(pwm_left, -1, +1))
         pwm_right = float(np.clip(pwm_right, -1, +1))
+
+
+        #! Do not modify below.
         grey = RGB(0.0, 0.0, 0.0)
-        led_commands = LEDSCommands(grey, grey, grey, grey, grey)
+        red = RGB(255.0,0.0,0.0)
+        blue = RGB(0.0,0.0,255.0)
+        led_commands = LEDSCommands(red, grey, blue, red, blue)
         pwm_commands = PWMCommands(motor_left=pwm_left, motor_right=pwm_right)
         commands = Duckiebot1Commands(pwm_commands, led_commands)
         context.write('commands', commands)

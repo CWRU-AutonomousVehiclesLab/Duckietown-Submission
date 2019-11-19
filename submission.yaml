@@ -4,7 +4,6 @@
 # conventions + format
 protocol: aido2_db18_agent-z2
 challenge: [aido3-LF-sim-testing,aido3-LF-sim-validation]
-user-label: "In duckietown we do not endorse DUI..."
+user-label: "2019-11-19"
 description: |
-    This is a simple template for an agent that uses Tensorflow for inference.
-
+    This utilizes default resnet structure.
