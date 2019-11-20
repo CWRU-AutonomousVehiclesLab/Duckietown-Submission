@@ -3,7 +3,7 @@
 
 # conventions + format
 protocol: aido2_db18_agent-z2
-challenge: [aido3-LF-sim-testing,aido3-LF-sim-validation]
-user-label: "2019-11-19"
+challenge: [aido3-LF-sim-validation,aido3-LF-sim-testing]
+user-label: "2019-11-19|FrankNet|10k"
 description: |
-    The first trial of FrankNet
+    The first trial of FrankNet. Yeah I named it by my name...

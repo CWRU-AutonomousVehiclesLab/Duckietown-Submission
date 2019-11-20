@@ -21,10 +21,14 @@ class TensorflowTemplateAgent:
 
         # define observation and output shapes
         self.model = load_model("FrankNet.h5")
-        
+
         self.current_image = np.zeros(expect_shape)
-        self.input_image = np.zeros((100,200,3))
-        self.to_predictor = np.expand_dims(self.input_image,axis=0)
+        self.input_image = np.zeros((100, 200, 3))
+        self.to_predictor = np.expand_dims(self.input_image, axis=0)
+
+        #! for fun
+        self.led_counter = 0
+
     def init(self, context: Context):
         context.info('init()')
 
@@ -41,9 +45,9 @@ class TensorflowTemplateAgent:
         self.input_image = self.image_resize(self.current_image, width=200)
         self.input_image = self.input_image[50:150, 0:200]
         self.input_image = cv2.cvtColor(self.input_image, cv2.COLOR_BGR2YUV)
-        self.to_predictor = np.expand_dims(self.input_image,axis=0)
+        self.to_predictor = np.expand_dims(self.input_image, axis=0)
 
-    def image_resize(self,image, width=None, height=None, inter=cv2.INTER_AREA):
+    def image_resize(self, image, width=None, height=None, inter=cv2.INTER_AREA):
         # initialize the dimensions of the image to be resized and
         # grab the image size
         dim = None
@@ -74,26 +78,38 @@ class TensorflowTemplateAgent:
         # return the resized image
         return resized
 
-
     #! Modification here! Return with action
+
     def compute_action(self, observation):
         print('FRANK LOOK HERE!!! In compute_action!!!')
-        (linear,angular) = self.model.predict(observation)
-        print('FRANK LOOK HERE!!!  Linear: ',linear,' Angular: ',angular)
-        return linear,angular
+        (linear, angular) = self.model.predict(observation)
+        print('FRANK LOOK HERE!!!  Linear: ', linear, ' Angular: ', angular)
+        return linear, angular
 
     #! Major Manipulation here Should not always change
     def on_received_get_commands(self, context: Context):
-        linear,angular = self.compute_action(self.to_predictor) #* Changed to custom size
+        linear, angular = self.compute_action(
+            self.to_predictor)  # * Changed to custom size
         #! Inverse Kinematics
         pwm_left, pwm_right = convertion_wrapper.convert(linear, angular)
         pwm_left = float(np.clip(pwm_left, -1, +1))
         pwm_right = float(np.clip(pwm_right, -1, +1))
-        #! Do not modify below.
+
+        #! LED Commands Sherrif Duck
         grey = RGB(0.0, 0.0, 0.0)
-        red = RGB(255.0,0.0,0.0)
-        blue = RGB(0.0,0.0,255.0)
-        led_commands = LEDSCommands(red, grey, blue, red, blue)
+        red = RGB(255.0, 0.0, 0.0)
+        blue = RGB(0.0, 0.0, 255.0)
+
+        if (self.led_counter < 30):
+            led_commands = LEDSCommands(grey, red, blue, red, blue)
+            self.led_counter += 1
+        else (self.led_counter > 30):
+            led_commands = LEDSCommands(blue, red, grey, blue, red)
+        if (self.led_counter == 60):
+            self.led_counter = 0
+            led_commands = LEDSCommands(grey, red, blue, red, blue)
+
+        #! Do not modify here!
         pwm_commands = PWMCommands(motor_left=pwm_left, motor_right=pwm_right)
         commands = Duckiebot1Commands(pwm_commands, led_commands)
         context.write('commands', commands)
