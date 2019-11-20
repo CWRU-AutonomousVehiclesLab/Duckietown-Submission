@@ -6,4 +6,4 @@ protocol: aido2_db18_agent-z2
 challenge: [aido3-LF-sim-testing,aido3-LF-sim-validation]
 user-label: "2019-11-19"
 description: |
-    This utilizes default resnet structure.
+    The first trial of FrankNet

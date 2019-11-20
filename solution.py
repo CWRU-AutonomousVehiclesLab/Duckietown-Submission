@@ -1,75 +1,30 @@
 #!/usr/bin/env python3
-
+import cv2
 import numpy as np
+import tensorflow as tf
 
 from aido_schemas import EpisodeStart, protocol_agent_duckiebot1, PWMCommands, Duckiebot1Commands, LEDSCommands, RGB, \
     wrap_direct, Context, Duckiebot1Observations, JPGImage
+from ik import SteeringToWheelVelWrapper
 
+from keras.models import load_model
+from frankmodel import FrankNet
+
+
+#! Global Config
 expect_shape = (480, 640, 3)
-
-class SteeringToWheelVelWrapper:
-    """ Converts policy that was trained with [velocity|heading] actions to
-    [wheelvel_left|wheelvel_right] to comply with AIDO evaluation format
-    """
-
-    def __init__(self, gain=1.0, trim=0.0, radius=0.0318, k=27.0, limit=1.0, wheel_dist=0.102):
-        # Should be adjusted so that the effective speed of the robot is 0.2 m/s
-        self.gain = gain
-
-        # Directional trim adjustment
-        self.trim = trim
-
-        # Wheel radius
-        self.radius = radius
-
-        # Motor constant
-        self.k = k
-
-        # Wheel velocity limit
-        self.limit = limit
-
-        # Distance between wheels
-        self.wheel_dist = wheel_dist
-
-    def convert(self, vel, angle):
-
-        # Distance between the wheels
-        baseline = self.wheel_dist
-
-        # assuming same motor constants k for both motors
-        k_r = self.k
-        k_l = self.k
-
-        # adjusting k by gain and trim
-        k_r_inv = (self.gain + self.trim) / k_r
-        k_l_inv = (self.gain - self.trim) / k_l
-
-        omega_r = (vel + 0.5 * angle * baseline) / self.radius
-        omega_l = (vel - 0.5 * angle * baseline) / self.radius
-
-        # conversion from motor rotation rate to duty cycle
-        u_r = omega_r * k_r_inv
-        u_l = omega_l * k_l_inv
-
-        # limiting output to limit, which is 1.0 for the duckiebot
-        u_r_limited = max(min(u_r, self.limit), -self.limit)
-        u_l_limited = max(min(u_l, self.limit), -self.limit)
-
-        vels = np.array([u_l_limited, u_r_limited])
-        return vels
-
 convertion_wrapper = SteeringToWheelVelWrapper()
 
 
 class TensorflowTemplateAgent:
-    def __init__(self, load_model=False, model_path=None):
-        from model import TfInference
-        # define observation and output shapes
-        self.model = TfInference(observation_shape=(1,) + expect_shape,  # this is the shape of the image we get.
-                                 action_shape=(1, 2),  # we need to output v, omega.
-                                 graph_location='tf_models/')  # this is the folder where our models are stored.
-        self.current_image = np.zeros(expect_shape)
+    def __init__(self):
 
+        # define observation and output shapes
+        self.model = load_model("FrankNet.h5")
+        
+        self.current_image = np.zeros(expect_shape)
+        self.input_image = np.zeros((100,200,3))
+        self.to_predictor = np.expand_dims(self.input_image,axis=0)
     def init(self, context: Context):
         context.info('init()')
 
@@ -79,21 +34,61 @@ class TensorflowTemplateAgent:
     def on_received_episode_start(self, context: Context, data: EpisodeStart):
         context.info(f'Starting episode "{data.episode_name}".')
 
+    #! Image pre-processing here
     def on_received_observations(self, data: Duckiebot1Observations):
         camera: JPGImage = data.camera
         self.current_image = jpg2rgb(camera.jpg_data)
+        self.input_image = self.image_resize(self.current_image, width=200)
+        self.input_image = self.input_image[50:150, 0:200]
+        self.input_image = cv2.cvtColor(self.input_image, cv2.COLOR_BGR2YUV)
+        self.to_predictor = np.expand_dims(self.input_image,axis=0)
 
+    def image_resize(self,image, width=None, height=None, inter=cv2.INTER_AREA):
+        # initialize the dimensions of the image to be resized and
+        # grab the image size
+        dim = None
+        (h, w) = image.shape[:2]
+
+        # if both the width and height are None, then return the
+        # original image
+        if width is None and height is None:
+            return image
+
+        # check to see if the width is None
+        if width is None:
+            # calculate the ratio of the height and construct the
+            # dimensions
+            r = height / float(h)
+            dim = (int(w * r), height)
+
+        # otherwise, the height is None
+        else:
+            # calculate the ratio of the width and construct the
+            # dimensions
+            r = width / float(w)
+            dim = (width, int(h * r))
+
+        # resize the image
+        resized = cv2.resize(image, dim, interpolation=inter)
+
+        # return the resized image
+        return resized
+
+
+    #! Modification here! Return with action
     def compute_action(self, observation):
-        action = self.model.predict(observation)
-        return action.astype(float)
+        print('FRANK LOOK HERE!!! In compute_action!!!')
+        (linear,angular) = self.model.predict(observation)
+        print('FRANK LOOK HERE!!!  Linear: ',linear,' Angular: ',angular)
+        return linear,angular
 
+    #! Major Manipulation here Should not always change
     def on_received_get_commands(self, context: Context):
-        linear,angular = self.compute_action(self.current_image)
+        linear,angular = self.compute_action(self.to_predictor) #* Changed to custom size
+        #! Inverse Kinematics
         pwm_left, pwm_right = convertion_wrapper.convert(linear, angular)
         pwm_left = float(np.clip(pwm_left, -1, +1))
         pwm_right = float(np.clip(pwm_right, -1, +1))
-
-
         #! Do not modify below.
         grey = RGB(0.0, 0.0, 0.0)
         red = RGB(255.0,0.0,0.0)

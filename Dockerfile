@@ -15,6 +15,9 @@ RUN cd /usr/local/cuda/lib64 \
 # DO NOT MODIFY: your submission won't run if you do
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
          gcc \
+         libsm6\
+         libxext6\
+         libxrender-dev\
          libc-dev\
          git \
          bzip2 \
@@ -27,14 +30,15 @@ RUN mkdir /workspace
 # here, we install the requirements, some requirements come by default
 # you can add more if you need to in requirements.txt
 COPY requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip3 install --upgrade pip
+RUN pip3 install -r requirements.txt
 
 # let's copy all our solution files to our workspace
 # if you have more file use the COPY command to move them to the workspace
 COPY solution.py /workspace
-COPY tf_models /workspace/tf_models
-COPY model.py /workspace
-
+COPY FrankNet.h5 /workspace
+COPY frankmodel.py /workspace
+COPY ik.py /workspace
 # we make the workspace our working directory
 WORKDIR /workspace
 
@@ -42,4 +46,4 @@ WORKDIR /workspace
 ENV DUCKIETOWN_SERVER=evaluator
 
 # let's see what you've got there...
-CMD python solution.py
+CMD python3 solution.py
