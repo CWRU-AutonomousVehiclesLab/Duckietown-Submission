@@ -81,9 +81,7 @@ class TensorflowTemplateAgent:
     #! Modification here! Return with action
 
     def compute_action(self, observation):
-        print('FRANK LOOK HERE!!! In compute_action!!!')
         (linear, angular) = self.model.predict(observation)
-        print('FRANK LOOK HERE!!!  Linear: ', linear, ' Angular: ', angular)
         return linear, angular
 
     #! Major Manipulation here Should not always change
@@ -100,14 +98,16 @@ class TensorflowTemplateAgent:
         red = RGB(255.0, 0.0, 0.0)
         blue = RGB(0.0, 0.0, 255.0)
 
+        led_commands = LEDSCommands(red, grey, blue, red, blue)
         if (self.led_counter < 30):
             led_commands = LEDSCommands(grey, red, blue, red, blue)
             self.led_counter += 1
-        else (self.led_counter > 30):
-            led_commands = LEDSCommands(blue, red, grey, blue, red)
-        if (self.led_counter == 60):
+        elif (self.led_counter >= 60):
             self.led_counter = 0
             led_commands = LEDSCommands(grey, red, blue, red, blue)
+        elif(self.led_counter > 30):
+            led_commands = LEDSCommands(blue, red, grey, blue, red)
+            self.led_counter += 1
 
         #! Do not modify here!
         pwm_commands = PWMCommands(motor_left=pwm_left, motor_right=pwm_right)
