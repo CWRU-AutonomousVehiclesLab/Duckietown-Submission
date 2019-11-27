@@ -3,7 +3,8 @@
 
 # conventions + format
 protocol: aido2_db18_agent-z2
-challenge: [aido3-LF-sim-validation,aido3-LF-sim-testing]
-user-label: "2019-11-19|FrankNet|10k"
+#challenge: [aido3-LF-sim-validation,aido3-LF-sim-testing]
+challenge: [aido3-LFVI-real-validation]
+user-label: "2019-11-19|FrankNet|Andrew_Activation"
 description: |
-    The first trial of FrankNet. Yeah I named it by my name...
+    Yep Andrew is right. Dense does need activation

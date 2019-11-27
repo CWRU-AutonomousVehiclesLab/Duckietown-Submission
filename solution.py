@@ -27,7 +27,7 @@ class TensorflowTemplateAgent:
         self.to_predictor = np.expand_dims(self.input_image, axis=0)
 
         #! for fun
-        self.led_counter = 0
+        #self.led_counter = 0
 
     def init(self, context: Context):
         context.info('init()')
@@ -99,15 +99,15 @@ class TensorflowTemplateAgent:
         blue = RGB(0.0, 0.0, 255.0)
 
         led_commands = LEDSCommands(red, grey, blue, red, blue)
-        if (self.led_counter < 30):
-            led_commands = LEDSCommands(grey, red, blue, red, blue)
-            self.led_counter += 1
-        elif (self.led_counter >= 60):
-            self.led_counter = 0
-            led_commands = LEDSCommands(grey, red, blue, red, blue)
-        elif(self.led_counter > 30):
-            led_commands = LEDSCommands(blue, red, grey, blue, red)
-            self.led_counter += 1
+        # if (self.led_counter < 30):
+        #     led_commands = LEDSCommands(grey, red, blue, red, blue)
+        #     self.led_counter += 1
+        # elif (self.led_counter >= 60):
+        #     self.led_counter = 0
+        #     led_commands = LEDSCommands(grey, red, blue, red, blue)
+        # elif(self.led_counter > 30):
+        #     led_commands = LEDSCommands(blue, red, grey, blue, red)
+        #     self.led_counter += 1
 
         #! Do not modify here!
         pwm_commands = PWMCommands(motor_left=pwm_left, motor_right=pwm_right)
