@@ -3,8 +3,8 @@
 
 # conventions + format
 protocol: aido2_db18_agent-z2
-#challenge: [aido3-LF-sim-validation,aido3-LF-sim-testing]
-challenge: [aido3-LFVI-real-validation]
-user-label: "2019-11-19|FrankNet|Andrew_Activation"
+challenge: [aido3-LF-sim-validation,aido3-LF-sim-testing]
+#challenge: [aido3-LFVI-real-validation]
+user-label: "2019-11-19|FrankNet|New_Data"
 description: |
     Yep Andrew is right. Dense does need activation
