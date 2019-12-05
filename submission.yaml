@@ -5,6 +5,6 @@
 protocol: aido2_db18_agent-z2
 challenge: [aido3-LF-sim-validation,aido3-LF-sim-testing]
 #challenge: [aido3-LFVI-real-validation]
-user-label: "2019-11-19|FrankNet|New_Data"
+user-label: "2019-12-05|FrankNet|Frozen2"
 description: |
-    Yep Andrew is right. Dense does need activation
+    The training data was collected listening to All is found from Frozen2.
