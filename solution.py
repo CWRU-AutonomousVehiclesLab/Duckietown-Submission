@@ -8,7 +8,7 @@ from aido_schemas import EpisodeStart, protocol_agent_duckiebot1, PWMCommands, D
 from ik import SteeringToWheelVelWrapper
 
 from keras.models import load_model
-from frankmodel import FrankNet
+
 
 
 #! Global Config
