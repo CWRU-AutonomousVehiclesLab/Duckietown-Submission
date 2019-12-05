@@ -37,7 +37,6 @@ RUN pip3 install -r requirements.txt
 # if you have more file use the COPY command to move them to the workspace
 COPY solution.py /workspace
 COPY FrankNet.h5 /workspace
-COPY frankmodel.py /workspace
 COPY ik.py /workspace
 # we make the workspace our working directory
 WORKDIR /workspace
