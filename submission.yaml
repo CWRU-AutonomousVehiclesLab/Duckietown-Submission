@@ -5,6 +5,6 @@
 protocol: aido2_db18_agent-z2
 challenge: [aido3-LF-sim-validation,aido3-LF-sim-testing]
 #challenge: [aido3-LFVI-real-validation]
-user-label: "2019-12-05|FrankNet|Frozen2"
+user-label: "2019-12-05|FrankNet|FullFrame"
 description: |
-    The training data was collected listening to All is found from Frozen2.
+    Testing behavior for full frame
