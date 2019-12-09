@@ -5,6 +5,6 @@
 protocol: aido2_db18_agent-z2
 challenge: [aido3-LF-sim-validation,aido3-LF-sim-testing]
 #challenge: [aido3-LFVI-real-validation]
-user-label: "2019-12-05|FrankNet|FullFrame"
+user-label: "2019-12-05|FrankNet|v3"
 description: |
-    Testing behavior for full frame
+    New dataset again. Mixed dataset
