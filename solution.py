@@ -51,7 +51,7 @@ class TensorflowTemplateAgent:
         self.model = load_model("FrankNet.h5",custom_objects=self.dependencies)
 
         self.current_image = np.zeros(expect_shape)
-        self.input_image = np.zeros((100, 200, 3))
+        self.input_image = np.zeros((150, 200, 3))
         self.to_predictor = np.expand_dims(self.input_image, axis=0)
 
         #! for fun
@@ -72,8 +72,8 @@ class TensorflowTemplateAgent:
         camera: JPGImage = data.camera
         self.current_image = jpg2rgb(camera.jpg_data)
         self.input_image = self.image_resize(self.current_image, width=200)
-        self.input_image = self.input_image[50:150, 0:200]
-        self.input_image = cv2.cvtColor(self.input_image, cv2.COLOR_BGR2YUV)
+        self.input_image = self.input_image[0:150, 0:200]
+        self.input_image = cv2.cvtColor(self.input_image, cv2.COLOR_RGB2YUV)
         self.to_predictor = np.expand_dims(self.input_image, axis=0)
 
     def image_resize(self, image, width=None, height=None, inter=cv2.INTER_AREA):
@@ -117,7 +117,10 @@ class TensorflowTemplateAgent:
     def on_received_get_commands(self, context: Context):
         linear, angular = self.compute_action(
             self.to_predictor)  # * Changed to custom size
-        #! Inverse Kinematics
+        #0.6 1.5
+        linear = linear
+        angular = angular 
+                #! Inverse Kinematics
         pwm_left, pwm_right = convertion_wrapper.convert(linear, angular)
         pwm_left = float(np.clip(pwm_left, -1, +1))
         pwm_right = float(np.clip(pwm_right, -1, +1))
